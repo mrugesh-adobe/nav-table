@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL Converter with Bulk Copy</title>
+    <title>URL Converter with Bulk Copy and Skipping</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -84,10 +84,15 @@
 
     // Function to extract relative URL and add the additional paths
     function generateImportUrls(baseUrls) {
-        const additionalPaths = ["index", "usage", "style"];
+        const additionalPaths = ["/index", "/usage", "/style"];
         let resultUrls = [];
 
         baseUrls.forEach(url => {
+            // Ignore if the URL is "NA" or "Redirect"
+            if (url === "NA" || url === "Redirect") {
+                return;
+            }
+
             // Remove the base part of the URL (everything before "/design-system")
             const relativeUrl = url.split(".page")[1];
 
