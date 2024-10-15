@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Converter with Bulk Copy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .copy-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background-color: #45a049;
+        }
+        .bulk-copy-btn {
+            margin-top: 20px;
+            display: block;
+            background-color: #007BFF;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .bulk-copy-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Convert URLs and Add Paths with Bulk Copy</h2>
+    <form id="urlForm">
+        <textarea id="inputUrls" placeholder="Paste your URLs here, one per line"></textarea>
+        <button type="submit">Convert URLs</button>
+    </form>
+
+    <h3>Result:</h3>
+    <table id="resultTable">
+        <thead>
+            <tr>
+                <th>Import URL</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Result rows will be appended here -->
+        </tbody>
+    </table>
+
+    <!-- Bulk copy button -->
+    <button id="bulkCopyBtn" class="bulk-copy-btn" style="display: none;">Copy All URLs</button>
+</div>
+
+<script>
+    let allImportUrls = [];  // To store all generated import URLs
+
+    // Function to extract relative URL and add the additional paths
+    function generateImportUrls(baseUrls) {
+        const additionalPaths = ["index", "usage", "style"];
+        let resultUrls = [];
+
+        baseUrls.forEach(url => {
+            // Remove the base part of the URL (everything before "/design-system")
+            const relativeUrl = url.split(".page")[1];
+
+            // For each relative URL, append the additional paths
+            additionalPaths.forEach(path => {
+                resultUrls.push(relativeUrl + path);
+            });
+        });
+
+        return resultUrls;
+    }
+
+    // Function to add result rows to the table
+    function displayResults(resultUrls) {
+        const tbody = document.querySelector("#resultTable tbody");
+        tbody.innerHTML = ""; // Clear any previous results
+        allImportUrls = resultUrls;  // Store all generated URLs for bulk copy
+
+        resultUrls.forEach(url => {
+            const row = document.createElement("tr");
+
+            // Create URL column
+            const urlCell = document.createElement("td");
+            urlCell.textContent = url;
+            row.appendChild(urlCell);
+
+            // Create copy button column
+            const actionCell = document.createElement("td");
+            const copyButton = document.createElement("button");
+            copyButton.textContent = "Copy";
+            copyButton.className = "copy-btn";
+            copyButton.onclick = () => copyToClipboard(url);
+            actionCell.appendChild(copyButton);
+            row.appendChild(actionCell);
+
+            // Append the row to the table body
+            tbody.appendChild(row);
+        });
+
+        // Show bulk copy button if there are results
+        document.getElementById("bulkCopyBtn").style.display = resultUrls.length > 0 ? 'block' : 'none';
+    }
+
+    // Function to copy individual text to clipboard
+    function copyToClipboard(text) {
+        const tempTextArea = document.createElement("textarea");
+        tempTextArea.value = text;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempTextArea);
+        alert("Copied: " + text);
+    }
+
+    // Function to handle bulk copy
+    function bulkCopy() {
+        const formattedUrls = allImportUrls.map(url => `"${url}"`).join(",\n");
+
+        const tempTextArea = document.createElement("textarea");
+        tempTextArea.value = formattedUrls;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempTextArea);
+        alert("All URLs copied to clipboard!");
+    }
+
+    // Handle form submission
+    document.getElementById("urlForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        // Get the input URLs
+        const inputText = document.getElementById("inputUrls").value.trim();
+        if (!inputText) {
+            alert("Please enter some URLs.");
+            return;
+        }
+
+        // Split input by new lines to get each URL
+        const inputUrls = inputText.split("\n").map(url => url.trim());
+
+        // Generate the import URLs
+        const resultUrls = generateImportUrls(inputUrls);
+
+        // Display the results in the table
+        displayResults(resultUrls);
+    });
+
+    // Attach bulk copy event listener
+    document.getElementById("bulkCopyBtn").addEventListener("click", bulkCopy);
+</script>
+
+</body>
+</html>
